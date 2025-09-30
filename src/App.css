@@ -2,7 +2,7 @@ body, html, #root, .App {
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: black; 
+  background-color: black;
   overflow: hidden;
   font-family: sans-serif;
   position: relative;
@@ -14,10 +14,4 @@ body, html, #root, .App {
   left: 0;
   width: 100%;
   height: 200px;
-  
-  filter: blur(80px); 
-  
-  transform: translateY(-50%) scale(1.2); 
-  
-  z-index: 5;
 }
