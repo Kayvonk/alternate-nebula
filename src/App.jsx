@@ -253,8 +253,8 @@ const App = () => {
   return (
     <div className="App">
       {/* This style tag injects the necessary CSS reset for body/html 
-        and the container styling, ensuring the margin is zeroed out 
-        and the content is centered without relying on Tailwind.
+          and the container styling, ensuring the margin is zeroed out 
+          and the content is centered without relying on Tailwind.
       */}
       <style dangerouslySetInnerHTML={{ __html: styleSheet }} />
       
@@ -287,21 +287,27 @@ const App = () => {
         
         {/* 6. GLOW PATHS (Rendered first, from back to front) */}
         
-        {/* MAIN (FULL WIDTH) GLOW - Furthest Back */}
-        <path fill={`url(#${glowGradientID})`} d={mainGlowPath} />
+        {/* MAIN (FULL WIDTH) GLOW - Furthest Back - Low Opacity 0.6 */}
+        <path 
+          fill={`url(#${glowGradientID})`} 
+          d={mainGlowPath} 
+          opacity="0.3" // Opacity added
+        />
         
-        {/* THIRD (75% WIDTH) GLOW - Intermediate Depth */}
+        {/* THIRD (75% WIDTH) GLOW - Intermediate Depth - Medium Opacity 0.8 */}
         <path 
           fill={`url(#${glowGradientID})`} 
           d={thirdGlowPath}
+          opacity="0.3" // Opacity added
           transform={`translate(${width / 2 - thirdWidth / 2
             }, 0) rotate(${thirdRotationAngle}, ${rotationCenter})`}
         />
 
-        {/* SECOND (50% WIDTH) GLOW - Closest Light */}
+        {/* SECOND (50% WIDTH) GLOW - Closest Light - Full Opacity 1.0 */}
         <path 
           fill={`url(#${glowGradientID})`} 
           d={secondGlowPath}
+          opacity=".2" // Opacity added
           transform={`translate(${width / 2 - secondWidth / 2
             }, 0) rotate(${rotationAngle}, ${rotationCenter})`}
         />
@@ -318,7 +324,7 @@ const App = () => {
         {/* 7. Animated Dark Nebula Shapes (Rendered last, from back to front) */}
         
         {/* MAIN (FULL WIDTH) SHAPE - Furthest Back */}
-        <path fill={silhouetteColor} d={mainDarkPath} />
+        <path fill={silhouetteColor} opacity="0.1" d={mainDarkPath} />
         
         {/* THIRD (75% WIDTH) SHAPE - Intermediate Depth */}
         <path
@@ -326,7 +332,7 @@ const App = () => {
           d={thirdDarkPath}
           transform={`translate(${width / 2 - thirdWidth / 2
             }, 0) rotate(${thirdRotationAngle}, ${rotationCenter})`}
-          opacity="0.85" // Slightly less translucent than the closest layer
+          opacity="0.1" // Slightly less translucent than the closest layer
         />
 
         {/* SECOND (50% WIDTH) SHAPE - Closest Shape */}
@@ -335,7 +341,7 @@ const App = () => {
           d={secondDarkPath}
           transform={`translate(${width / 2 - secondWidth / 2
             }, 0) rotate(${rotationAngle}, ${rotationCenter})`}
-          opacity="0.8" // Most translucent (appears closest)
+          opacity="0.1" // Most translucent (appears closest)
         />
       </svg>
     </div>
