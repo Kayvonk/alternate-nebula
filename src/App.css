@@ -13,6 +13,6 @@ body, html, #root, .App {
   top: 50%;
   left: 0;
   width: 100%;
-  height: 300px; /* ⭐️ Match the new intrinsic height */
-  transform: translateY(-50%); /* ⭐️ Center it vertically */
+  height: 600px; /* Must match the height constant in JS */
+  transform: translateY(-50%); /* Centers the SVG container */
 }
