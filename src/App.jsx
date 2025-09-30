@@ -15,13 +15,14 @@ function App() {
 
   // State is ONLY used for rendering
   const [amplitudeOffset, setAmplitudeOffset] = useState(0);
-  const [xOffset, setXOffset] = useState(0); 
+  // xOffset is no longer needed since we're removing the second layer that used it
+  // const [xOffset, setXOffset] = useState(0); 
 
   // REFS: Used to track animation values without triggering component re-renders
   const amplitudeRef = useRef(0);
   const isIncreasingRef = useRef(true);
 
-  // Animation Loop (FIXED for smooth, continuous cycle)
+  // Animation Loop (Fixed for smooth, continuous cycle)
   useEffect(() => {
     let animationFrameId;
     let lastTime = performance.now();
@@ -30,7 +31,6 @@ function App() {
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
 
-      // Calculate the step (Frame-rate independent movement)
       const step = deltaTime * 0.001 * speed * 20;
 
       // --- Amplitude Pulsation Logic (Using Refs for smoothness) ---
@@ -41,13 +41,13 @@ function App() {
         currentAmp += step;
         if (currentAmp >= maxAmplitudeOffset) {
           currentAmp = maxAmplitudeOffset;
-          isIncreasingRef.current = false; // Flip direction
+          isIncreasingRef.current = false; 
         }
       } else {
         currentAmp -= step;
         if (currentAmp <= -maxAmplitudeOffset) {
           currentAmp = -maxAmplitudeOffset;
-          isIncreasingRef.current = true; // Flip direction
+          isIncreasingRef.current = true; 
         }
       }
       amplitudeRef.current = currentAmp;
@@ -55,20 +55,20 @@ function App() {
       // Update state for rendering
       setAmplitudeOffset(currentAmp);
 
-      // Horizontal panning for the background layer
-      setXOffset(prev => (prev - 0.5) % width);
+      // xOffset animation is removed as there's no second layer
+      // setXOffset(prev => (prev - 0.5) % width);
 
       animationFrameId = requestAnimationFrame(animate);
     };
 
     animationFrameId = requestAnimationFrame(animate);
 
-    // Cleanup function to stop the animation
     return () => cancelAnimationFrame(animationFrameId);
   }, [maxAmplitudeOffset, speed, width]);
 
   // Helper function to generate the SVG path data
-  const generatePath = useCallback((ampBase, ampOffset, thick, waveLen, horizontalShift) => {
+  // Simplified since there's only one path now, no horizontalShift needed
+  const generatePath = useCallback((ampBase, ampOffset, thick, waveLen) => {
     let path = `M0 ${height / 2} `;
     
     // Top edge of the wave
@@ -76,7 +76,7 @@ function App() {
       const x = (i / points) * width;
       const y =
         height / 2 +
-        (ampBase + ampOffset) * Math.sin((2 * Math.PI * (x + horizontalShift)) / waveLen);
+        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen); // Removed horizontalShift
       path += `L${x} ${y} `;
     }
     
@@ -85,7 +85,7 @@ function App() {
       const x = (i / points) * width;
       const y =
         height / 2 +
-        (ampBase + ampOffset) * Math.sin((2 * Math.PI * (x + horizontalShift)) / waveLen) +
+        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen) + // Removed horizontalShift
         thick;
       path += `L${x} ${y} `;
     }
@@ -94,60 +94,37 @@ function App() {
   }, [height, width, points]);
 
 
-  // Path 1: Foreground layer (Pulsating)
-  const path1 = generatePath(
+  // Only one path now: The primary deep purple nebula
+  const nebulaPath = generatePath(
     baseAmplitude, 
     amplitudeOffset, 
     thickness, 
-    wavelength, 
-    0
-  );
-
-  // Path 2: Background layer (Wider, Smoother, and Moving)
-  const path2 = generatePath(
-    baseAmplitude * 1.5,     
-    amplitudeOffset * 0.5,   
-    thickness * 0.8,         
-    wavelength * 1.5,        
-    xOffset                 
+    wavelength
   );
 
 
   return (
     <div className="App">
-      {/* 1. Star Field Background */}
-      <div className="star-field" /> 
+      {/* Star Field background removed */}
       
-      {/* 2. Layered Nebula SVG */}
       <svg
         className="nebula"
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
       >
         <defs>
-          {/* Gradient 1: Front Layer (Purple/Pink) */}
-          <linearGradient id="nebulaGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(128,0,255,0)" />
-            <stop offset="25%" stopColor="rgba(120,80,255,0.4)" />
-            <stop offset="50%" stopColor="rgba(200,150,255,0.6)" />
-            <stop offset="75%" stopColor="rgba(80,120,255,0.4)" />
-            <stop offset="100%" stopColor="rgba(128,0,255,0)" />
-          </linearGradient>
-
-          {/* Gradient 2: Back Layer (Cyan/Green) */}
-          <linearGradient id="nebulaGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(0,100,100,0)" />
-            <stop offset="30%" stopColor="rgba(0,255,200,0.2)" />
-            <stop offset="70%" stopColor="rgba(100,255,0,0.2)" />
-            <stop offset="100%" stopColor="rgba(0,100,100,0)" />
+          {/* Main Deep Purple Gradient */}
+          <linearGradient id="nebulaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(30,0,60,0)" />    {/* Darker, almost black purple start */}
+            <stop offset="20%" stopColor="rgba(100,0,180,0.5)" /> {/* Deep purple with some opacity */}
+            <stop offset="50%" stopColor="rgba(180,50,255,0.7)" /> {/* Brighter, rich purple core */}
+            <stop offset="80%" stopColor="rgba(80,0,150,0.5)" />  {/* Deep purple again */}
+            <stop offset="100%" stopColor="rgba(30,0,60,0)" />   {/* Darker end */}
           </linearGradient>
         </defs>
 
-        {/* Path 2: Background Layer */}
-        <path fill="url(#nebulaGradient2)" d={path2} />
-        
-        {/* Path 1: Foreground Layer */}
-        <path fill="url(#nebulaGradient1)" d={path1} />
+        {/* Render the single nebula path */}
+        <path fill="url(#nebulaGradient)" d={nebulaPath} />
 
       </svg>
     </div>

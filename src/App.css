@@ -37,8 +37,8 @@ body, html, #root, .App {
   /* Increased blur for ethereal look */
   filter: blur(80px); 
   
-  /* Scaled up to feel massive and centered */
-  transform: translateY(-50%) scale(2); 
+  /* UPDATED SCALE: Makes the nebula smaller (120% size) but still vertically centered. */
+  transform: translateY(-50%) scale(1.2); 
   
   z-index: 5;
 }
