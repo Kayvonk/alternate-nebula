@@ -17,8 +17,8 @@ const Nebula = () => {
     // --- Static Constants ---
     const width = 800;
     const height = 600;
-    const baseAmplitude = 30;
-    const amplitudeVariation = 0.3;
+    const baseAmplitude = 10;
+    const amplitudeVariation = 0.2;
     const thickness = 2;
     const baseWavelength = 200;
     const points = 800;
@@ -26,10 +26,10 @@ const Nebula = () => {
     const amplitudeAnimationFactor = 10;
 
     const glowHeight = 350;
-    const secondWidth = width * 1.2;
-    const rotationAngle = 5;
-    const thirdWidth = width * 1.2;
-    const thirdRotationAngle = -5;
+    const secondWidth = width;
+    const rotationAngle = 0;
+    const thirdWidth = width;
+    const thirdRotationAngle = 0;
     const rotationCenter = `${width / 2} ${height / 2}`;
 
     const purpleGlowID = "purpleGlowGradient";
@@ -39,8 +39,9 @@ const Nebula = () => {
     const centerLineY = height / 2;
     const silhouetteColor = "#000000";
 
-    const topMaskYCenter = height * 0.5;
-    const topMaskFillThickness = 150;
+    // Top mask constants
+    const topMaskYCenter = 0; // start at the top
+    const topMaskFillThickness = 300; // taller to cover top fade
     const topWaveWavelength = 150;
     const topWavePhaseSpeedMultiplier = 3;
     const topWaveAmplitudeFactor = 0.5;
@@ -150,11 +151,12 @@ const Nebula = () => {
             const currentAmplitude =
                 baseAmplitude * topWaveAmplitudeFactor * baseAmpModifier + oscillation;
 
+            // Shift mask to start from top
             let y =
                 yCenter + currentAmplitude * Math.sin((2 * Math.PI * x) / wavelength);
 
-            topEdgePoints.push({ x, y: y - fillThickness / 2 });
-            bottomEdgePoints.push({ x, y: y + fillThickness / 2 });
+            topEdgePoints.push({ x, y: y });
+            bottomEdgePoints.push({ x, y: y + fillThickness });
         }
 
         let path = `M${topEdgePoints[0].x} ${topEdgePoints[0].y} `;
