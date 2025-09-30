@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 
 const NebulaMask = ({ width = 800, height = 600 }) => {
   const [phase, setPhase] = useState(0);
-  const [breathingPhase, setBreathingPhase] = useState(0);
   const animationRef = useRef();
 
   useEffect(() => {
     const animate = () => {
       setPhase((prev) => (prev + 0.025) % (2 * Math.PI));
-      setBreathingPhase((prev) => (prev + 0.01) % (2 * Math.PI));
       animationRef.current = requestAnimationFrame(animate);
     };
     animationRef.current = requestAnimationFrame(animate);
@@ -22,8 +20,8 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
   const baseWavelength = 200;
   const amplitudeAnimationFactor = 10;
 
-  const maskHeight = height / 4;
-  const breathingAmplitude = 20;
+  const maskHeight = height / 4; // mask affects only top 1/4
+  const centerLineY = maskHeight;
 
   const baseAmplitudeControls = useRef([]);
   if (baseAmplitudeControls.current.length === 0) {
@@ -49,9 +47,8 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
       amplitudeAnimationFactor;
 
     const currentAmplitude = baseAmplitude * baseAmpModifier + oscillation;
-    const breathingOffset = Math.sin(breathingPhase) * breathingAmplitude;
 
-    return maskHeight + breathingOffset - currentAmplitude * Math.sin((2 * Math.PI * x) / baseWavelength);
+    return centerLineY - currentAmplitude * Math.sin((2 * Math.PI * x) / baseWavelength);
   };
 
   const generateWavePath = () => {
@@ -67,8 +64,7 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
       path += ` L${pathPoints[i].x} ${pathPoints[i].y}`;
     }
     for (let i = points; i >= 0; i--) {
-      const { x } = pathPoints[i];
-      path += ` L${x} 0`;
+      path += ` L${pathPoints[i].x} 0`; // top of mask
     }
     path += " Z";
     return path;
@@ -80,30 +76,32 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
     <svg
       width={width}
       height={height}
-      style={{ position: "absolute", top: 0, left: 0, zIndex: 9999 }}
+      style={{ position: "absolute", top: 0, left: 0 }}
     >
       <defs>
-        {/* Nebula gradient */}
+        {/* Nebula gradient for full rectangle */}
         <linearGradient id="nebulaGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#000000ff" />
-          <stop offset="40%" stopColor="#000000ff" />
+          <stop offset="50%" stopColor="#000000ff" />
           <stop offset="100%" stopColor="#000000ff" />
         </linearGradient>
 
-        {/* Wavy mask with gradient fade */}
+        {/* Mask: black = hide, white = show */}
+        <linearGradient id="maskGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#036a7cff" stopOpacity="1" />
+          <stop offset="50%" stopColor="#006b96ff" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#ffffffff" stopOpacity="0.3" />
+        </linearGradient>
+
         <mask id="nebulaMask">
+          {/* full width, full height rectangle = visible */}
           <rect width={width} height={height} fill="white" />
-          <linearGradient id="maskGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#000000ff" stopOpacity="1" />
-            <stop offset="90%" stopColor="#000000ff" stopOpacity=".9" />
-            <stop offset="95%" stopColor="#006786ff" stopOpacity=".8" />
-            <stop offset="100%" stopColor="#006786ff" stopOpacity=".1" />
-          </linearGradient>
+          {/* only top fourth has fade wave */}
           <path fill="url(#maskGradient)" d={wavePath} />
         </mask>
       </defs>
 
-      {/* Apply mask to nebula gradient */}
+      {/* Full-screen nebula rectangle with mask */}
       <rect
         width={width}
         height={height}
