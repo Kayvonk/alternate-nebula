@@ -31,7 +31,7 @@ const App = () => {
         {/* Apply mask to nebula + stars */}
         <g mask="url(#nebulaMask)">
           <Nebula width={width} height={height} phase={phase} />
-          <Stars width={width} height={height} starCount={50} phase={phase} />
+          {/* <Stars width={width} height={height} starCount={50} phase={phase} /> */}
         </g>
       </svg>
     </div>

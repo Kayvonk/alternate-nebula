@@ -8,7 +8,7 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
   useEffect(() => {
     const animate = () => {
       setPhase((prev) => (prev + 0.025) % (2 * Math.PI));
-      setBreathingPhase((prev) => (prev + 0.01) % (2 * Math.PI)); // slower breathing
+      setBreathingPhase((prev) => (prev + 0.01) % (2 * Math.PI));
       animationRef.current = requestAnimationFrame(animate);
     };
     animationRef.current = requestAnimationFrame(animate);
@@ -76,8 +76,6 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
 
   const wavePath = generateWavePath();
 
-  const breathingOpacity = 0.2 + 0.8 * ((Math.sin(breathingPhase) + 1) / 2);
-
   return (
     <svg
       width={width}
@@ -85,14 +83,33 @@ const NebulaMask = ({ width = 800, height = 600 }) => {
       style={{ position: "absolute", top: 0, left: 0, zIndex: 9999 }}
     >
       <defs>
-        <linearGradient id="maskGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#000000ff" stopOpacity="1" />
-          <stop offset="100%" stopColor="#000a0eff" stopOpacity=".8" />
-          <stop offset="100%" stopColor="#001016ff" stopOpacity={breathingOpacity} />
+        {/* Nebula gradient */}
+        <linearGradient id="nebulaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000000ff" />
+          <stop offset="40%" stopColor="#000000ff" />
+          <stop offset="100%" stopColor="#000000ff" />
         </linearGradient>
+
+        {/* Wavy mask with gradient fade */}
+        <mask id="nebulaMask">
+          <rect width={width} height={height} fill="white" />
+          <linearGradient id="maskGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#000000ff" stopOpacity="1" />
+            <stop offset="90%" stopColor="#000000ff" stopOpacity=".9" />
+            <stop offset="95%" stopColor="#006786ff" stopOpacity=".8" />
+            <stop offset="100%" stopColor="#006786ff" stopOpacity=".1" />
+          </linearGradient>
+          <path fill="url(#maskGradient)" d={wavePath} />
+        </mask>
       </defs>
 
-      <path fill="url(#maskGradient)" d={wavePath} />
+      {/* Apply mask to nebula gradient */}
+      <rect
+        width={width}
+        height={height}
+        fill="url(#nebulaGradient)"
+        mask="url(#nebulaMask)"
+      />
     </svg>
   );
 };
