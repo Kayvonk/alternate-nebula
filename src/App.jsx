@@ -25,7 +25,7 @@ const App = () => {
   const height = 600; // Taller SVG height for more canvas space
   const baseAmplitude = 30;
   const amplitudeVariation = 0.6;
-  const thickness = 15;
+  const thickness = 2; // Reduced thickness to make the silhouettes thin and unnoticeable
   const baseWavelength = 200;
   const points = 800;
   const segments = 5;
@@ -34,11 +34,15 @@ const App = () => {
   const glowHeight = 350; // Pushes the glow's top edge much higher
   const secondWidth = width * 0.5;
   const rotationAngle = 10;
+  // Constants for the third, intermediate layer
+  const thirdWidth = width * 0.75; // 75% width
+  const thirdRotationAngle = -5; // Rotated slightly to the left
+
   const rotationCenter = `${width / 2} ${height / 2}`;
   const glowGradientID = "glowGradient";
   const centerLineY = height / 2; // New center is 300
-  const silhouetteColor = "#200020"; // Very dark, deep purple-black (Nebula Silhouette)
-  const backgroundColor = "#000000"; // MODIFIED: Pure Black Background
+  const silhouetteColor = "#7F00FF"; // MODIFIED: Bright purple to match the gradient start
+  const backgroundColor = "#000000"; // Pure Black Background
 
   // --- New Top Mask Constants (For the Fade Effect) ---
   const topMaskYCenter = height * 0.15; // Vertical position near the top (y=90)
@@ -205,9 +209,14 @@ const App = () => {
 
   const mainDarkPath = generatePath(width, false);
   const mainGlowPath = generatePath(width, true); // Path for the background glow
-  const topMaskPath = generateTopMaskPath(); // MODIFIED: Use the new mask path function
+  const topMaskPath = generateTopMaskPath(); // Use the new mask path function
 
   const secondDarkPath = generatePath(secondWidth, false);
+  const secondGlowPath = generatePath(secondWidth, true); // Path for the second glow
+
+  // Paths for the third layer
+  const thirdDarkPath = generatePath(thirdWidth, false);
+  const thirdGlowPath = generatePath(thirdWidth, true); 
 
   const styleSheet = `
     /* CORE FIX: The margin issue is fixed by explicitly resetting margins 
@@ -260,12 +269,12 @@ const App = () => {
             <feGaussianBlur in="SourceGraphic" stdDeviation={blurAmount} />
           </filter>
           
-          {/* 5. Define the Vertical Glow Gradient - PURPLE TO TRANSPARENT BLACK FADE */}
+          {/* 5. Define the Vertical Glow Gradient - Rich nebula purple to transparent black */}
           <linearGradient id={glowGradientID} x1="0%" y1="100%" x2="0%" y2="0%">
-            {/* 0% Offset (Bottom of SVG) - Deep Purple */}
+            {/* 0% Offset (Bottom of SVG) - Rich Violet/Purple */}
             <stop
               offset="0%"
-              style={{ stopColor: "#6A0DAD", stopOpacity: 0.9 }}
+              style={{ stopColor: "#7F00FF", stopOpacity: 1.0 }} // Rich, full opacity violet
             />
             
             {/* 100% Offset (Top of SVG) - Transparent Black to blend with background */}
@@ -276,8 +285,26 @@ const App = () => {
           </linearGradient>
         </defs>
         
-        {/* 6. GLOW PATH: Sits behind the dark cloud, starts at the wave, fades up */}
+        {/* 6. GLOW PATHS (Rendered first, from back to front) */}
+        
+        {/* MAIN (FULL WIDTH) GLOW - Furthest Back */}
         <path fill={`url(#${glowGradientID})`} d={mainGlowPath} />
+        
+        {/* THIRD (75% WIDTH) GLOW - Intermediate Depth */}
+        <path 
+          fill={`url(#${glowGradientID})`} 
+          d={thirdGlowPath}
+          transform={`translate(${width / 2 - thirdWidth / 2
+            }, 0) rotate(${thirdRotationAngle}, ${rotationCenter})`}
+        />
+
+        {/* SECOND (50% WIDTH) GLOW - Closest Light */}
+        <path 
+          fill={`url(#${glowGradientID})`} 
+          d={secondGlowPath}
+          transform={`translate(${width / 2 - secondWidth / 2
+            }, 0) rotate(${rotationAngle}, ${rotationCenter})`}
+        />
         
         {/* 8. TOP BLACK DYNAMIC MASK (Covers and fades the glow below) */}
         <path
@@ -288,17 +315,27 @@ const App = () => {
           filter={`url(#${blurFilterID})`}
         />
         
-        {/* 7. Animated Dark Nebula Shapes (Sits on top of the glow) */}
-        {/* MAIN (FULL WIDTH) SHAPE */}
+        {/* 7. Animated Dark Nebula Shapes (Rendered last, from back to front) */}
+        
+        {/* MAIN (FULL WIDTH) SHAPE - Furthest Back */}
         <path fill={silhouetteColor} d={mainDarkPath} />
         
-        {/* SECOND (50% WIDTH) SHAPE - Rotated and translated for depth */}
+        {/* THIRD (75% WIDTH) SHAPE - Intermediate Depth */}
+        <path
+          fill={silhouetteColor}
+          d={thirdDarkPath}
+          transform={`translate(${width / 2 - thirdWidth / 2
+            }, 0) rotate(${thirdRotationAngle}, ${rotationCenter})`}
+          opacity="0.85" // Slightly less translucent than the closest layer
+        />
+
+        {/* SECOND (50% WIDTH) SHAPE - Closest Shape */}
         <path
           fill={silhouetteColor}
           d={secondDarkPath}
           transform={`translate(${width / 2 - secondWidth / 2
             }, 0) rotate(${rotationAngle}, ${rotationCenter})`}
-          opacity="0.8" // Slightly translucent for layered effect
+          opacity="0.8" // Most translucent (appears closest)
         />
       </svg>
     </div>
