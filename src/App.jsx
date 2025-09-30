@@ -32,10 +32,10 @@ const App = () => {
   const amplitudeAnimationFactor = 20;
 
   const glowHeight = 350; // Pushes the glow's top edge much higher
-  const secondWidth = width * 0.5;
+  const secondWidth = width * 1.2;
   const rotationAngle = 10;
   // Constants for the third, intermediate layer
-  const thirdWidth = width * 0.75; // 75% width
+  const thirdWidth = width * 1.2;
   const thirdRotationAngle = -5; // Rotated slightly to the left
 
   const rotationCenter = `${width / 2} ${height / 2}`;
@@ -45,7 +45,7 @@ const App = () => {
   const backgroundColor = "#000000"; // Pure Black Background
 
   // --- New Top Mask Constants (For the Fade Effect) ---
-  const topMaskYCenter = height * 0.15; // Vertical position near the top (y=90)
+  const topMaskYCenter = height * 0.5; // Vertical position near the top (y=90)
   const topMaskFillThickness = 150; 
   const topWaveWavelength = 150;
   const topWavePhaseSpeedMultiplier = 3;
@@ -317,7 +317,7 @@ const App = () => {
           fill={topMaskColor} // Filled with black
           stroke="none"      // No stroke needed
           d={topMaskPath}
-          opacity="1.0"      // Fully opaque to block light
+          opacity=".25"      // Fully opaque to block light
           filter={`url(#${blurFilterID})`}
         />
         
