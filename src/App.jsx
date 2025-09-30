@@ -1,6 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import "./App.css";
 
+// Define color palettes with enhanced brightness for better radiation
+const colorPalettes = [
+  // 0: Deep Rich Purple (Enhanced center glow)
+  [
+    { offset: "0%", color: "rgba(255,150,255,0.8)" }, // Brighter, near-white core
+    { offset: "20%", color: "rgba(160,50,255,0.6)" }, // Saturated purple mid-glow
+    { offset: "80%", color: "rgba(30,0,60,0)" },   // Outer fade
+  ],
+  // 1: Deep Blue (Fine-tuned)
+  [
+    { offset: "0%", color: "rgba(150,200,255,0.8)" },
+    { offset: "20%", color: "rgba(50,100,200,0.6)" },
+    { offset: "80%", color: "rgba(0,10,60,0)" },
+  ],
+  // 2: Deep Green (Fine-tuned)
+  [
+    { offset: "0%", color: "rgba(200,255,150,0.8)" },
+    { offset: "20%", color: "rgba(100,200,50,0.6)" },
+    { offset: "80%", color: "rgba(10,60,0,0)" },
+  ],
+  // 3: Deep Red (Enhanced center glow)
+  [
+    { offset: "0%", color: "rgba(255,180,180,0.8)" }, // Brighter, pinkish core
+    { offset: "20%", color: "rgba(200,50,50,0.6)" }, // Saturated red mid-glow
+    { offset: "80%", color: "rgba(60,0,0,0)" },   // Outer fade
+  ],
+];
+
 function App() {
   const width = 800;
   const height = 200;
@@ -12,17 +40,25 @@ function App() {
   // Animation Control Constants
   const maxAmplitudeOffset = 10;
   const speed = 0.3; 
+  const colorTransitionDuration = 1000; // milliseconds
 
-  // State is ONLY used for rendering
+  // State for wave animation
   const [amplitudeOffset, setAmplitudeOffset] = useState(0);
-  // xOffset is no longer needed since we're removing the second layer that used it
-  // const [xOffset, setXOffset] = useState(0); 
 
-  // REFS: Used to track animation values without triggering component re-renders
+  // State for color animation
+  const [currentColorIndex, setCurrentColorIndex] = useState(0);
+  const [animatedColors, setAnimatedColors] = useState(colorPalettes[0]);
+
+  // REFS for wave animation
   const amplitudeRef = useRef(0);
   const isIncreasingRef = useRef(true);
 
-  // Animation Loop (Fixed for smooth, continuous cycle)
+  // REFS for color animation
+  const currentColorPaletteRef = useRef(colorPalettes[0]);
+  const targetColorPaletteRef = useRef(colorPalettes[0]);
+  const colorTransitionStartTimeRef = useRef(0);
+
+  // Wave and Color Animation Loop
   useEffect(() => {
     let animationFrameId;
     let lastTime = performance.now();
@@ -33,7 +69,7 @@ function App() {
 
       const step = deltaTime * 0.001 * speed * 20;
 
-      // --- Amplitude Pulsation Logic (Using Refs for smoothness) ---
+      // --- Amplitude Pulsation Logic ---
       let currentAmp = amplitudeRef.current;
       let isIncreasing = isIncreasingRef.current;
 
@@ -51,12 +87,53 @@ function App() {
         }
       }
       amplitudeRef.current = currentAmp;
-
-      // Update state for rendering
       setAmplitudeOffset(currentAmp);
 
-      // xOffset animation is removed as there's no second layer
-      // setXOffset(prev => (prev - 0.5) % width);
+      // --- Color Transition Logic ---
+      const now = performance.now();
+      if (colorTransitionStartTimeRef.current > 0 && now < colorTransitionStartTimeRef.current + colorTransitionDuration) {
+        const progress = (now - colorTransitionStartTimeRef.current) / colorTransitionDuration;
+        const currentPalette = currentColorPaletteRef.current;
+        const targetPalette = targetColorPaletteRef.current;
+        
+        const newAnimatedColors = currentPalette.map((startStop, i) => {
+            const endStop = targetPalette[i];
+            
+            // Interpolate color (RGBA)
+            const parseColor = (colorStr) => {
+                const parts = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d\.]*)\)/);
+                return parts ? {
+                    r: parseInt(parts[1]),
+                    g: parseInt(parts[2]),
+                    b: parseInt(parts[3]),
+                    a: parseFloat(parts[4] || '1') 
+                } : null;
+            };
+
+            const startRGBA = parseColor(startStop.color);
+            const endRGBA = parseColor(endStop.color);
+
+            if (!startRGBA || !endRGBA) return startStop; 
+
+            const interpolatedColor = `rgba(${
+                Math.round(startRGBA.r + (endRGBA.r - startRGBA.r) * progress)
+            },${
+                Math.round(startRGBA.g + (endRGBA.g - startRGBA.g) * progress)
+            },${
+                Math.round(startRGBA.b + (endRGBA.b - startRGBA.b) * progress)
+            },${
+                (startRGBA.a + (endRGBA.a - startRGBA.a) * progress).toFixed(2)
+            })`;
+            
+            return { offset: startStop.offset, color: interpolatedColor };
+        });
+        setAnimatedColors(newAnimatedColors);
+      } else if (colorTransitionStartTimeRef.current > 0 && now >= colorTransitionStartTimeRef.current + colorTransitionDuration) {
+          // Transition finished
+          setAnimatedColors(targetColorPaletteRef.current);
+          currentColorPaletteRef.current = targetColorPaletteRef.current;
+          colorTransitionStartTimeRef.current = 0; 
+      }
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -64,28 +141,26 @@ function App() {
     animationFrameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(animationFrameId);
-  }, [maxAmplitudeOffset, speed, width]);
+  }, [maxAmplitudeOffset, speed, width, colorTransitionDuration]);
+
 
   // Helper function to generate the SVG path data
-  // Simplified since there's only one path now, no horizontalShift needed
   const generatePath = useCallback((ampBase, ampOffset, thick, waveLen) => {
     let path = `M0 ${height / 2} `;
     
-    // Top edge of the wave
     for (let i = 0; i <= points; i++) {
       const x = (i / points) * width;
       const y =
         height / 2 +
-        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen); // Removed horizontalShift
+        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen);
       path += `L${x} ${y} `;
     }
     
-    // Bottom edge of the wave (reverse order)
     for (let i = points; i >= 0; i--) {
       const x = (i / points) * width;
       const y =
         height / 2 +
-        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen) + // Removed horizontalShift
+        (ampBase + ampOffset) * Math.sin((2 * Math.PI * x) / waveLen) +
         thick;
       path += `L${x} ${y} `;
     }
@@ -93,8 +168,6 @@ function App() {
     return path;
   }, [height, width, points]);
 
-
-  // Only one path now: The primary deep purple nebula
   const nebulaPath = generatePath(
     baseAmplitude, 
     amplitudeOffset, 
@@ -102,28 +175,32 @@ function App() {
     wavelength
   );
 
+  // Click handler to cycle colors
+  const handleClick = () => {
+    const nextIndex = (currentColorIndex + 1) % colorPalettes.length;
+    setCurrentColorIndex(nextIndex);
+    
+    colorTransitionStartTimeRef.current = performance.now();
+    targetColorPaletteRef.current = colorPalettes[nextIndex];
+  };
 
   return (
     <div className="App">
-      {/* Star Field background removed */}
-      
       <svg
         className="nebula"
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
+        onClick={handleClick} // Add click handler here
       >
         <defs>
-          {/* Main Deep Purple Gradient */}
-          <linearGradient id="nebulaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="rgba(30,0,60,0)" />    {/* Darker, almost black purple start */}
-            <stop offset="20%" stopColor="rgba(100,0,180,0.5)" /> {/* Deep purple with some opacity */}
-            <stop offset="50%" stopColor="rgba(180,50,255,0.7)" /> {/* Brighter, rich purple core */}
-            <stop offset="80%" stopColor="rgba(80,0,150,0.5)" />  {/* Deep purple again */}
-            <stop offset="100%" stopColor="rgba(30,0,60,0)" />   {/* Darker end */}
-          </linearGradient>
+          {/* Use radialGradient for central burst effect */}
+          <radialGradient id="nebulaGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            {animatedColors.map((stop, index) => (
+              <stop key={index} offset={stop.offset} stopColor={stop.color} />
+            ))}
+          </radialGradient>
         </defs>
 
-        {/* Render the single nebula path */}
         <path fill="url(#nebulaGradient)" d={nebulaPath} />
 
       </svg>
