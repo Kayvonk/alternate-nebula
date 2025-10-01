@@ -1,12 +1,22 @@
-# React + Vite
+# Nebula Sandbox
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Table of Contents
+* [Description](#description)
+* [Usage](#usage)
+* [Contributions](#contributions)
+* [Questions](#questions)
 
-Currently, two official plugins are available:
+## Description
+Nebula Sandbox consists of two main components which use vector animations to emulate a 2D nebula. There is an optional third component to include stars which can be commented in via the App.jsx.
+![MainThumbnail](./public/nebula-sandbox-thumbnail.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+## Usage
+To view the application locally, run 'npm i' then run 'npm run dev'.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Questions
+Follow me on [Github](https://github.com/Kayvonk).
+
+To contact me, send an email to kayvonk@gmail.com with your name and inquiry.
+
+Deployed Application: https://alternate-nebula.onrender.com/

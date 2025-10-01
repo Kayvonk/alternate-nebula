@@ -207,8 +207,8 @@ const Nebula = () => {
 
                 <linearGradient id={blueGlowID} x1="0%" y1="100%" x2="0%" y2="0%">
                     <stop offset="0%" style={{ stopColor: "#4169E1", stopOpacity: 1.0 }} />
-                    <stop offset="40%" style={{ stopColor: "#7F00FF", stopOpacity: 0.3 }} />
-                    <stop offset="80%" style={{ stopColor: "#000000", stopOpacity: 0.0 }} />
+                    <stop offset="40%" style={{ stopColor: "#8332d3ff", stopOpacity: 0.3 }} />
+                    <stop offset="80%" style={{ stopColor: "#8f2e2eff", stopOpacity: 0.0 }} />
                 </linearGradient>
             </defs>
 
